@@ -17,6 +17,19 @@ in
 
   programs.firefox.enable = true;
 
+  # Mounting windows drives
+  fileSystems."/run/media/omznc/HDDs" = {
+    device = "/dev/disk/by-uuid/9E4E34EF4E34C1B7"; # use blkid to get UUID
+    fsType = "ntfs-3g";
+    options = [
+      "rw"
+      "uid=1000"
+      "gid=100"
+      "umask=022"
+      "windows_names"
+    ];
+  };
+
   # Fonts
   fonts.packages = with pkgs; [
     geist-font
@@ -109,6 +122,7 @@ in
       "networkmanager"
       "wheel"
     ];
+    shell = pkgs.zsh;
     packages = with pkgs; [
       kdePackages.kate
       code-cursor
