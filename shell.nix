@@ -5,7 +5,7 @@
     enable = true;
     ohMyZsh = {
       enable = true;
-      theme = "cloud-context";
+      theme = "";
       plugins = [
         "git"
         "docker"
@@ -45,6 +45,10 @@
       # FZF integration
       source ${pkgs.fzf}/share/fzf/key-bindings.zsh
       source ${pkgs.fzf}/share/fzf/completion.zsh
+
+      # Pure prompt theme
+      autoload -U promptinit; promptinit
+      prompt pure
     '';
   };
 
@@ -59,5 +63,6 @@
     fzf # Fuzzy finder
     zoxide # Smart cd
     nixfmt-rfc-style
+    pure-prompt # Pure ZSH theme
   ];
 }

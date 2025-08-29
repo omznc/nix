@@ -15,7 +15,34 @@ in
     ./security.nix
   ];
 
-  programs.firefox.enable = true;
+  programs.firefox = {
+    enable = true;
+    package = pkgs.firefox.override {
+      cfg = {
+        enableGnomeExtensions = true;
+        enablePlasmaBrowserIntegration = true;
+      };
+    };
+    policies = {
+      DisableTelemetry = true;
+      DisableFirefoxStudies = true;
+      Preferences = {
+        "browser.tabs.closeWindowWithLastTab" = false;
+        "browser.sessionstore.resume_from_crash" = false;
+        "browser.aboutConfig.showWarning" = false;
+        "network.http.max-connections" = 256;
+        "network.http.max-persistent-connections-per-server" = 10;
+        "network.dns.disablePrefetch" = false;
+        "network.prefetch-next" = true;
+      };
+    };
+  };
+
+  services.gnome.gnome-keyring.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
 
   # Mounting windows drives
   fileSystems."/run/media/omznc/HDDs" = {
@@ -66,6 +93,17 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
 
+  # Firewall configuration for KDE Connect
+  networking.firewall = { 
+    enable = true;
+    allowedTCPPortRanges = [ 
+      { from = 1714; to = 1764; } # KDE Connect
+    ];  
+    allowedUDPPortRanges = [ 
+      { from = 1714; to = 1764; } # KDE Connect
+    ];  
+  };  
+
   # Set your time zone.
   time.timeZone = "Europe/Sarajevo";
 
@@ -97,7 +135,12 @@ in
   environment.plasma6.excludePackages = with pkgs.kdePackages; [
     konsole
   ];
-  environment.variables.TERMINAL = "ghostty";
+  environment.variables = {
+    TERMINAL = "ghostty";
+    MOZ_DISABLE_CONTENT_SANDBOX = "1";
+    __GL_SHADER_DISK_CACHE = "1";
+    __GL_SHADER_DISK_CACHE_PATH = "~/.cache/nvidia";
+  };
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -116,6 +159,7 @@ in
   };
 
   users.defaultUserShell = pkgs.zsh;
+  services.fstrim.enable = true;
 
   users.users.omznc = {
     isNormalUser = true;
@@ -128,10 +172,11 @@ in
     packages = with pkgs; [
       kdePackages.kate
       unstable.code-cursor-fhs
-      slack
+      slack 
       unstable.telegram-desktop
       signal-desktop
       discord
+      spotify
     ];
   };
 
@@ -166,6 +211,7 @@ in
   environment.systemPackages = with pkgs; [
     wget
     git
+    gnupg
     fastfetch
     unzip
     htop
@@ -179,6 +225,9 @@ in
     docker-compose
     pnpm
     unstable.bun
+    bluez
+    bluez-tools
+    kdePackages.kdeconnect-kde
   ];
 
   # This value determines the NixOS release from which the default
@@ -196,6 +245,7 @@ in
   # Docker virtualization
   virtualisation.docker.enable = true;
 
+  hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
   hardware.steam-hardware.enable = true;
@@ -205,7 +255,7 @@ in
   hardware.nvidia = {
     forceFullCompositionPipeline = true;
     modesetting.enable = true;
-    powerManagement.enable = true;
+    powerManagement.enable = false;  # Disable on desktop - can cause issues
     powerManagement.finegrained = false;
     open = true;
     nvidiaSettings = true;
@@ -243,6 +293,9 @@ in
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
+      commit.gpgsign = true;
+      tag.gpgsign = true;
+      gpg.format = "ssh";
     };
   };
 }

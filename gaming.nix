@@ -4,7 +4,12 @@
   # Gaming-related configuration
   programs = {
     gamemode.enable = true;
-    steam.enable = true;
+  };
+
+  programs.steam = {
+     enable = true;
+     remotePlay.openFirewall = true;
+     dedicatedServer.openFirewall = true;
   };
 
   # Gaming packages
