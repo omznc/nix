@@ -115,6 +115,8 @@ in
     pulse.enable = true;
   };
 
+  users.defaultUserShell = pkgs.zsh;
+
   users.users.omznc = {
     isNormalUser = true;
     description = "Omar Zunic";
@@ -125,13 +127,39 @@ in
     shell = pkgs.zsh;
     packages = with pkgs; [
       kdePackages.kate
-      code-cursor
+      unstable.code-cursor-fhs
       slack
-      telegram-desktop
+      unstable.telegram-desktop
       signal-desktop
       discord
     ];
   };
+
+  # Ghostty configuration for user omznc
+  environment.etc."ghostty-omznc-config".text = ''
+    # Ghostty configuration managed by NixOS
+    # Explicitly set zsh as the shell
+    command = zsh
+
+    # Window appearance
+    window-padding-x = 4
+    window-padding-y = 4
+
+    # Font settings
+    font-family = GeistMono Nerd Font
+    font-size = 12
+
+    # Theme
+    background = 1e1e2e
+    foreground = cdd6f4
+  '';
+
+  # Symlink the config to the user's home directory
+  system.activationScripts.ghosttyUserConfig = ''
+    mkdir -p /home/omznc/.config/ghostty
+    ln -sf /etc/ghostty-omznc-config /home/omznc/.config/ghostty/config
+    chown -R omznc:users /home/omznc/.config/ghostty
+  '';
 
   nixpkgs.config.allowUnfree = true;
 
@@ -197,6 +225,12 @@ in
       dates = "weekly";
       options = "--delete-older-than 30d";
     };
+  };
+
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = true;
+    dates = "11:00"; # UTC = 4am PDT / 3am PST
   };
 
   programs.git = {

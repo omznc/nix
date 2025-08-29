@@ -5,7 +5,7 @@
     enable = true;
     ohMyZsh = {
       enable = true;
-      theme = "agnoster";
+      theme = "cloud-context";
       plugins = [
         "git"
         "docker"
