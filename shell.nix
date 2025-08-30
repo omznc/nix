@@ -15,6 +15,7 @@
     };
     enableCompletion = true;
     syntaxHighlighting.enable = true;
+    autosuggestions.enable = true;
 
     shellAliases = {
       # Modern CLI tools
@@ -29,6 +30,11 @@
       rebuild = "sudo nixos-rebuild switch";
       home-rebuild = "home-manager switch";
       update = "sudo nixos-rebuild switch --upgrade";
+
+      # nh CLI shortcuts
+      nhh = "nh home switch .";
+      nhs = "nh os switch .";
+      nhus = "nh os switch -u .";
 
       # Git shortcuts
       gs = "git status";
@@ -46,6 +52,11 @@
       source ${pkgs.fzf}/share/fzf/key-bindings.zsh
       source ${pkgs.fzf}/share/fzf/completion.zsh
 
+      # Enhanced completion settings
+      autoload -U compinit && compinit
+      zstyle ':completion:*' menu select
+      zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
       # Pure prompt theme
       autoload -U promptinit; promptinit
       prompt pure
@@ -54,7 +65,7 @@
 
   # Terminal and shell tools
   environment.systemPackages = with pkgs; [
-    ghostty
+    alacritty
     starship # Alternative prompt (backup)
     eza # Better ls
     bat # Better cat with syntax highlighting
@@ -64,5 +75,7 @@
     zoxide # Smart cd
     nixfmt-rfc-style
     pure-prompt # Pure ZSH theme
+    zsh-completions # Enhanced completion functions
+    nh # Yet another nix helper
   ];
 }

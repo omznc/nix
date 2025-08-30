@@ -20,7 +20,6 @@ in
     package = pkgs.firefox.override {
       cfg = {
         enableGnomeExtensions = true;
-        enablePlasmaBrowserIntegration = true;
       };
     };
     policies = {
@@ -84,6 +83,7 @@ in
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.timeout = 0; # Disable boot menu
 
   boot.loader.systemd-boot.edk2-uefi-shell.enable = true;
   boot.loader.systemd-boot.edk2-uefi-shell.sortKey = "y_edk2";
@@ -93,15 +93,15 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
 
-  # Firewall configuration for KDE Connect
-  networking.firewall = { 
+  # Firewall configuration for GSConnect
+  networking.firewall = {
     enable = true;
-    allowedTCPPortRanges = [ 
-      { from = 1714; to = 1764; } # KDE Connect
-    ];  
-    allowedUDPPortRanges = [ 
-      { from = 1714; to = 1764; } # KDE Connect
-    ];  
+    allowedTCPPortRanges = [
+      { from = 1714; to = 1764; } # GSConnect
+    ];
+    allowedUDPPortRanges = [
+      { from = 1714; to = 1764; } # GSConnect
+    ];
   };  
 
   # Set your time zone.
@@ -126,20 +126,23 @@ in
   # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
 
-  # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
+  # Enable the GNOME Desktop Environment.
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.desktopManager.gnome.enable = true;
 
-  # Prefer Ghostty; exclude other terminals
+  # Prefer Alacritty; exclude other terminals
   services.xserver.desktopManager.xterm.enable = false;
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [
-    konsole
+  environment.gnome.excludePackages = with pkgs; [
+    gnome-console
   ];
   environment.variables = {
-    TERMINAL = "ghostty";
+    TERMINAL = "alacritty";
     MOZ_DISABLE_CONTENT_SANDBOX = "1";
     __GL_SHADER_DISK_CACHE = "1";
     __GL_SHADER_DISK_CACHE_PATH = "~/.cache/nvidia";
+    # Fix NVIDIA cursor issues with GNOME
+    WLR_NO_HARDWARE_CURSORS = "1";
+    XCURSOR_SIZE = "24";
   };
 
   # Configure keymap in X11
@@ -170,9 +173,9 @@ in
     ];
     shell = pkgs.zsh;
     packages = with pkgs; [
-      kdePackages.kate
+      gnome-text-editor
       unstable.code-cursor-fhs
-      slack 
+      slack
       unstable.telegram-desktop
       signal-desktop
       discord
@@ -180,30 +183,82 @@ in
     ];
   };
 
-  # Ghostty configuration for user omznc
-  environment.etc."ghostty-omznc-config".text = ''
-    # Ghostty configuration managed by NixOS
-    # Explicitly set zsh as the shell
-    command = zsh
+  # Alacritty configuration for user omznc (TOML format)
+  environment.etc."alacritty-omznc-config".text = ''
+    # Alacritty configuration managed by NixOS
+    # https://alacritty.org/config-alacritty.html
 
-    # Window appearance
-    window-padding-x = 4
-    window-padding-y = 4
+    [font]
+    size = 12
 
-    # Font settings
-    font-family = GeistMono Nerd Font
-    font-size = 12
+    [font.normal]
+    family = "GeistMono Nerd Font"
+    style = "Regular"
 
-    # Theme
-    background = 1e1e2e
-    foreground = cdd6f4
+    [font.bold]
+    family = "GeistMono Nerd Font"
+    style = "Bold"
+
+    [font.italic]
+    family = "GeistMono Nerd Font"
+    style = "Italic"
+
+    [terminal.shell]
+    program = "/run/current-system/sw/bin/zsh"
+    args = ["-l", "-c", "exec zsh"]
+
+    [scrolling]
+    history = 10000
+    multiplier = 3
+
+    [mouse]
+    hide_when_typing = true
+
+    [selection]
+    semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+    save_to_clipboard = true
+
+    [[keyboard.bindings]]
+    key = "C"
+    mods = "Control|Shift"
+    action = "Copy"
+
+    [[keyboard.bindings]]
+    key = "V"
+    mods = "Control|Shift"
+    action = "Paste"
+
+    [[keyboard.bindings]]
+    key = "Insert"
+    mods = "Shift"
+    action = "PasteSelection"
+
+    [[keyboard.bindings]]
+    key = "Key0"
+    mods = "Control"
+    action = "ResetFontSize"
+
+    [[keyboard.bindings]]
+    key = "Equals"
+    mods = "Control"
+    action = "IncreaseFontSize"
+
+    [[keyboard.bindings]]
+    key = "Minus"
+    mods = "Control"
+    action = "DecreaseFontSize"
+
+    [[keyboard.bindings]]
+    key = "N"
+    mods = "Control|Shift"
+    action = "SpawnNewInstance"
   '';
 
   # Symlink the config to the user's home directory
-  system.activationScripts.ghosttyUserConfig = ''
-    mkdir -p /home/omznc/.config/ghostty
-    ln -sf /etc/ghostty-omznc-config /home/omznc/.config/ghostty/config
-    chown -R omznc:users /home/omznc/.config/ghostty
+  system.activationScripts.alacrittyUserConfig = ''
+    mkdir -p /home/omznc/.config/alacritty
+    ln -sf /etc/alacritty-omznc-config /home/omznc/.config/alacritty/alacritty.toml
+    chown -R omznc:users /home/omznc/.config/alacritty
   '';
 
   nixpkgs.config.allowUnfree = true;
@@ -227,7 +282,7 @@ in
     unstable.bun
     bluez
     bluez-tools
-    kdePackages.kdeconnect-kde
+    gnomeExtensions.gsconnect
   ];
 
   # This value determines the NixOS release from which the default
