@@ -170,6 +170,7 @@ in
     extraGroups = [
       "networkmanager"
       "wheel"
+      "docker"
     ];
     shell = pkgs.zsh;
     packages = with pkgs; [
@@ -275,7 +276,6 @@ in
     bleachbit
     nodejs_24
     python314
-    vscode-fhs
     docker
     docker-compose
     pnpm
@@ -283,6 +283,14 @@ in
     bluez
     bluez-tools
     gnomeExtensions.gsconnect
+    (let base = pkgs.appimageTools.defaultFhsEnvArgs; in 
+      pkgs.buildFHSEnv (base // {
+        name = "fhs";
+        targetPkgs = pkgs: (base.targetPkgs pkgs) ++ [pkgs.pkg-config];
+        profile = "export FHS=1";
+        runScript = "zsh";
+        extraOutputsToInstall = ["dev"];
+      }))
   ];
 
   # This value determines the NixOS release from which the default

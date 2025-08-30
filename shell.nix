@@ -31,10 +31,7 @@
       home-rebuild = "home-manager switch";
       update = "sudo nixos-rebuild switch --upgrade";
 
-      # nh CLI shortcuts
-      nhh = "nh home switch .";
-      nhs = "nh os switch .";
-      nhus = "nh os switch -u .";
+
 
       # Git shortcuts
       gs = "git status";
@@ -76,6 +73,5 @@
     nixfmt-rfc-style
     pure-prompt # Pure ZSH theme
     zsh-completions # Enhanced completion functions
-    nh # Yet another nix helper
   ];
 }
